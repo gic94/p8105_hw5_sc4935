@@ -11,6 +11,92 @@ library(tidyverse)
 
 # Problem 1
 
+### Describe the raw data
+
+
+
+
+
+### Create a city_state variable
+
 ```{r}
+homicide_df = read_csv("data/homicide-data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(city_state = str_c(city, state, sep = ", ")) %>% 
+  mutate(solved_or_not = if_else(disposition == "Closed without arrest" | disposition == "Open/No arrest", "unsolved", "solved")) %>% 
+  view()
+
+homicide_df
+```
+
+### Summarize within cities to obtain the total number of homicides and the number of unsolved homicides 
+
+```{r}
+homicide_city = homicide_df %>% 
+  count(city_state) %>% 
+  rename(total = n)
+ 
+homicide_city
+
+homicide_city_unsolved = homicide_df %>% 
+  select(city_state, solved_or_not) %>%
+  group_by(city_state) %>% 
+  summarise(total_unsolved = sum(solved_or_not == "unsolved")) %>% 
+  select(-city_state)
+  
+homicide_city_unsolved 
+
+homicide_count = bind_cols(homicide_city, homicide_city_unsolved) %>% 
+  view()
+homicide_count
+```
+
+
+
+### For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved
+
+```{r}
+prop.test(
+  homicide_count %>% filter(city_state == "Baltimore, MD") %>% pull(total_unsolved), 
+  homicide_count %>% filter(city_state == "Baltimore, MD") %>% pull(total)) %>% 
+  broom::tidy()
 
 ```
+
+### Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each
+
+```{r}
+unsolved_prop_city = homicide_count %>% 
+  mutate(prop_t = map2(.x = total_unsolved, .y = total, ~prop.test(x = .x, n = .y)), tidy_t = map(.x = prop_t, ~broom::tidy(.x))) %>% 
+  unnest(tidy_t) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+  
+unsolved_prop_city
+```
+
+### Create a plot that shows the estimates and CIs for each city
+
+```{r}
+unsolved_prop_city %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "The estimates and CIs for each city",
+    x = "City of state",
+    y = "Estimate rate",
+    caption = "Data from homicide-data.csv"
+  )
+
+```
+
+
+
+
+
+
+# Problem 2
+
+### 
