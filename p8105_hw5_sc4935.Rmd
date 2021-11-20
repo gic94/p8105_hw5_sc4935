@@ -5,7 +5,7 @@ date: "11/17/2021"
 output: github_document
 ---
 
-```{r}
+```{r, message=FALSE}
 library(tidyverse)
 ```
 
@@ -97,12 +97,12 @@ unsolved_prop_city %>%
 
 ### Start with a dataframe containing all file names
 
-```{r, error = TRUE}
+```{r, error = TRUE, message=FALSE}
 path_df = tibble(path = list.files("data/data_p2/")) %>% 
   mutate(path = str_c("data/data_p2/", path), data = map(.x = path, read_csv))
 read_csv(path_df$path[[20]])
 
-research_df = bind_rows(path_df) %>% 
+research_df = path_df %>% 
   unnest(data)
 
 research_df
