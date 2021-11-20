@@ -112,4 +112,39 @@ research_df = bind_rows(path_df) %>%
 
 research_df
 ```
+
+### Tidy the result
+
+```{r}
+research_tidy = research_df %>% 
+  rename(arm_type = path) %>% 
+  mutate(arm_type = str_replace(arm_type, "data/data_p2/", "")) %>% 
+  mutate(arm_type = str_replace(arm_type, ".csv", "")) %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "observations") %>% 
+  mutate(week = str_replace(week, "week_", "")) %>% 
+  arrange(arm_type, week)
+  
+research_tidy
 ```
+
+### Make a spaghetti plot showing observations on each subject over time
+
+```{r}
+ggplot(research_tidy, aes(x = week, y = observations, color = arm_type, group = arm_type)) +
+  geom_point(alpha = 0.5) + geom_line() + 
+  labs(
+    title = "Observations on each subject over time",
+    x = "Week",
+    y = "Observation value"
+  ) 
+```
+
+### Comment on differences between groups
+
+
+
+
+# Problem 3
