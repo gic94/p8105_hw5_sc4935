@@ -58,7 +58,8 @@ homicide_count
 ```{r}
 prop.test(
   homicide_count %>% filter(city_state == "Baltimore, MD") %>% pull(total_unsolved), 
-  homicide_count %>% filter(city_state == "Baltimore, MD") %>% pull(total)) %>% 
+  homicide_count %>% filter(city_state == "Baltimore, MD") %>% pull(total)
+  ) %>% 
   broom::tidy()
 
 ```
@@ -99,4 +100,16 @@ unsolved_prop_city %>%
 
 # Problem 2
 
-### 
+### Start with a dataframe containing all file names
+
+```{r, error = TRUE}
+path_df = tibble(path = list.files("data/data_p2/")) %>% 
+  mutate(path = str_c("data/data_p2/", path), data = map(.x = path, read_csv))
+read_csv(path_df$path[[20]])
+
+research_df = bind_rows(path_df) %>% 
+  unnest(data)
+
+research_df
+```
+```
